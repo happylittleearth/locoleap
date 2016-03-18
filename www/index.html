@@ -50,8 +50,8 @@ var global = {};
 window.addEventListener("deviceorientation", moveBall);
 function moveBall(evt) {
 	//
-	var yrotation = -evt.gamma / 90.0 * 2 * Math.PI;
-	var xrotation = -evt.beta / 180.0 * 2 * Math.PI;
+	var xrotation = -evt.gamma / 90.0 * 2 * Math.PI;
+	var yrotation = -evt.alpha / 360.0 * 2 * Math.PI;
 	global.camera.rotation.y = yrotation;
 	global.camera.rotation.x = xrotation;
 	$("#coords").text("Alpha: " + evt.alpha + ", Beta:" + evt.beta + ", Gamma:" + evt.gamma);
