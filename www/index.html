@@ -54,7 +54,7 @@ function moveBall(evt) {
 	var xrotation = -evt.beta / 180.0 * 2 * Math.PI;
 	global.camera.rotation.y = yrotation;
 	global.camera.rotation.x = xrotation;
-	//$("#coords").text("Alpha: " + evt.alpha + ", Beta:" + evt.beta + ", Gamma:" + evt.gamma);
+	$("#coords").text("Alpha: " + evt.alpha + ", Beta:" + evt.beta + ", Gamma:" + evt.gamma);
 	//alert(yrotation);
 
 } 
