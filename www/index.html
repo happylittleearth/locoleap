@@ -1,151 +1,94 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Babylon - Basic scene</title>
-
-    <style>
-
-        html, body {
-
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-
-        }
-
-        #renderCanvas {
-
-            width: 100%;
-            height: 100%;
-            touch-action: none;
-
-        }
-
-	#coords {
-		font-size:20px;
-	}
-
-    </style>
-
-    <script src="jquery.js"></script>
-    <script src="babylon.js"></script>
-    <script src="hand.js"></script>
-    <script src="cordova.max.js"></script>
-
-</head>
-
-<body>
-
-    <div id="coords"></div>
-    <canvas id="renderCanvas"></canvas>
-
-    <script type="text/javascript">
-
-
-
-var global = {};
-
-window.addEventListener("deviceorientation", moveBall);
-function moveBall(evt) {
-	//
-	var xrotation;
-	if (evt.gamma > 0)
-		xrotation = (90.0 - evt.gamma) / 90.0 * Math.PI / 2;
-	else 
-		xrotation = -(90.0 + evt.gamma) / 90.0 * Math.PI / 2;
+<html>
+	<head>
+		<title>My first Three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="three.min.js"></script>
+		<script>
 		
-	var yrotation = -evt.alpha / 360.0 * 2 * Math.PI;
-	global.camera.rotation.y = yrotation;
-	global.camera.rotation.x = xrotation;
-	$("#coords").text("Alpha: " + evt.alpha + ", Beta:" + evt.beta + ", Gamma:" + evt.gamma);
-	//alert(yrotation);
+			var lr = 0.0;
+			var ud = 0.0;
+		
+			window.addEventListener("keypress", function(evt) { 
+				var key = String.fromCharCode(evt.which);
+				switch(key) {
+				     case "w":
+				        ud += 0.05;
+				        break;
+				     case "s":
+				        ud -= 0.05;
+				        break;
+				     case "a":
+				        lr += 0.05;
+				        break;
+				     case "d":
+				        lr -= 0.05;
+				        break;				        
+				 }  
+					
+				console.log("key: " + key);
+			});
+			
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
-} 
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
 
-// setups normal camera
-var setupNormalCamera = function() {
-	// This creates and positions the arc camera
-	//global.camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", 0, Math.PI/2, 10, new BABYLON.Vector3(0, 0, 0), global.scene);
-	//global.camera = new BABYLON.DeviceOrientationCamera("DevOr_camera", new BABYLON.Vector3(0, 1, -15), global.scene);
-	global.camera = new BABYLON.TargetCamera("DevOr_camera", new BABYLON.Vector3(0, 1, 0), global.scene);
-	//global.camera.moveSensibility = 0;
-	//global.camera.angularSensibility = 0;
-	//global.camera = new BABYLON.VirtualJoysticksCamera("VJ_camera", new BABYLON.Vector3(0, 1, -15), global.scene);
-	
+			//The texture to be painted on the inside of our spherical world
+			var texture = new THREE.TextureLoader().load("picture.jpg");
 
-	// limiting the upper and lower bounds removes the scrollwheel behaviour
-	global.camera.lowerRadiusLimit = global.camera.radius;
-	global.camera.upperRadiusLimit = global.camera.radius;
 
-	// This attaches the camera to the canvas
-	global.camera.attachControl(global.canvas, false);
-}
+			//Let there be light			
+			var light = new THREE.AmbientLight( 0xdddddd ); // soft white light
+			scene.add( light );
+			
+/* 			var cubgeo = new THREE.BoxGeometry( 1, 1, 1 );
+			var cubgeoMaterial = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+			var cube = new THREE.Mesh( cubgeo, cubgeoMaterial );
+			scene.add( cube );
+ */			
+			
+			var geometry = new THREE.SphereGeometry( 100, 32, 32 );
+			var material = new THREE.MeshPhongMaterial( {
+				    map: texture,
+				    side: THREE.DoubleSide //only THREE.BackSide is required, but double side let's be see my sphere from the outside just in case. 
+				} );
 
-// setup photosphere
-var setupPhotoSphere = function(){
-	
-	// Our built-in 'sphere' shape. Params: name, subdivs, size, scene
-	var sphere = BABYLON.Mesh.CreateSphere("sphere1", 32, 100, global.scene);
+			var sphere = new THREE.Mesh( geometry, material );
+			scene.add( sphere );
 
-	// load material
-	var texture = new BABYLON.Texture("picture.jpg", global.scene);
-	
-	// rotate texture
-	texture.wAng = Math.PI;
-	
-	// create new material
-	var materialPhotoSphere = new BABYLON.StandardMaterial("texturePhotoSphere", global.scene);
-	materialPhotoSphere.diffuseTexture = texture;
-	
-	// enable backface culling
-	materialPhotoSphere.backFaceCulling = false;
-	//sphere.scaling.x = -1;
-	
-	// set emissive color
-	materialPhotoSphere.emissiveColor = new BABYLON.Color3(1.0, 1.0, 1.0);
+			var axisHelper = new THREE.AxisHelper( 1 );
+      		scene.add( axisHelper );
 
-	// asign material to sphere
-	sphere.material = materialPhotoSphere;
-	
-	//global.camera.cameraDirection = new BABYLON.Vector3(0.0, -1.0 * Math.PI, 0.0);	
+			//camera.position.z = 10;
+			//camera.lookAt(new THREE.Vector3( -1, 0, 1 ));
+			//camera.rotation.x = Math.PI / 4;
 
-}
+			var render = function () {
+				requestAnimationFrame( render );
+				
+				//camera.rotation.x += 0.1;
+				//camera.rotation.z +- 0.05;
 
-// Init babylon
-var setupBabylon = function() {
+				
+				var direction = new THREE.Vector3(0, 0, 1.0);
+				direction = direction.applyAxisAngle(new THREE.Vector3(0, 1.0, 0), lr);
+				camera.lookAt(direction);
+				//camera.rotation.x = ud;
 
-	// Get the canvas element from our HTML below
-	global.canvas = document.getElementById("renderCanvas");
+			//	cube.rotation.x += 0.1;
+		//		cube.rotation.y += 0.1;
 
-	// Load BABYLON 3D engine
-	global.engine = new BABYLON.Engine(global.canvas, true);
+				renderer.render(scene, camera);
+			};
 
-	 // This creates a basic Babylon Scene object (non-mesh)
-	global.scene = new BABYLON.Scene(global.engine);
-
-	// setup camera
-	setupNormalCamera()
-
-	// setup photosphere
-	setupPhotoSphere();
-	
-	// Once the scene is loaded, just register a render loop to render it
-	global.engine.runRenderLoop(function () {
-		global.scene.render();
-	});
-	
-}
-
-// onload
-//$(document).ready(function() {
-	
-	//setup babylonjs
-	setupBabylon();
-//});
-
-    </script> 
-
-</body>
+			render();
+		</script>
+	</body>
 </html>
