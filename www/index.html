@@ -79,6 +79,7 @@
 				
 				var direction = new THREE.Vector3(0, 0, 1.0);
 				direction = direction.applyAxisAngle(new THREE.Vector3(0, 1.0, 0), lr);
+				direction = direction.applyAxisAngle(new THREE.Vector3(1.0, 0, 0), -ud);
 				camera.lookAt(direction);
 				//camera.rotation.x = ud;
 
