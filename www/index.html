@@ -9,9 +9,29 @@
 	<body>
 		<script src="three.min.js"></script>
 		<script>
-		
+
 			var lr = 0.0;
 			var ud = 0.0;
+
+
+			window.addEventListener("deviceorientation", moveBall);
+			function moveBall(evt) {
+				//
+				var xrotation;
+				if (evt.gamma > 0)
+					xrotation = (90.0 - evt.gamma) / 90.0 * Math.PI / 2;
+				else 
+					xrotation = -(90.0 + evt.gamma) / 90.0 * Math.PI / 2;
+					
+				var yrotation = -evt.alpha / 360.0 * 2 * Math.PI;
+				lr = yrotation;
+				ud = xrotation;
+				//$("#coords").text("Alpha: " + evt.alpha + ", Beta:" + evt.beta + ", Gamma:" + evt.gamma);
+				//alert(yrotation);
+			} 
+
+
+		
 		
 			window.addEventListener("keypress", function(evt) { 
 				var key = String.fromCharCode(evt.which);
@@ -29,8 +49,7 @@
 				        lr -= 0.05;
 				        break;				        
 				 }  
-					
-				console.log("key: " + key);
+				
 			});
 			
 			var scene = new THREE.Scene();
@@ -48,13 +67,15 @@
 			var light = new THREE.AmbientLight( 0xdddddd ); // soft white light
 			scene.add( light );
 			
-/* 			var cubgeo = new THREE.BoxGeometry( 1, 1, 1 );
-			var cubgeoMaterial = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+					
+ 			var cubgeo = new THREE.BoxGeometry( 1, 1, 1 );
+			var cubgeoMaterial = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide} );
 			var cube = new THREE.Mesh( cubgeo, cubgeoMaterial );
+			cube.position.z = 10;
 			scene.add( cube );
- */			
+ 			
 			
-			var geometry = new THREE.SphereGeometry( 100, 32, 32 );
+			var geometry = new THREE.SphereGeometry( 1000, 32, 32 );
 			var material = new THREE.MeshPhongMaterial( {
 				    map: texture,
 				    side: THREE.DoubleSide //only THREE.BackSide is required, but double side let's be see my sphere from the outside just in case. 
@@ -79,7 +100,9 @@
 				
 				var direction = new THREE.Vector3(0, 0, 1.0);
 				direction = direction.applyAxisAngle(new THREE.Vector3(0, 1.0, 0), lr);
-				direction = direction.applyAxisAngle(new THREE.Vector3(1.0, 0, 0), -ud);
+				var tmpVec = new THREE.Vector3(direction.z, 0.0, -direction.x);
+				tmpVec = tmpVec.normalize();
+				direction = direction.applyAxisAngle(tmpVec, -ud);
 				camera.lookAt(direction);
 				//camera.rotation.x = ud;
 
