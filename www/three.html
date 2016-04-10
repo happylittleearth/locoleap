@@ -1,0 +1,118 @@
+<html>
+	<head>
+		<title>My first Three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="three.min.js"></script>
+		<script>
+
+			var lr = 0.0;
+			var ud = 0.0;
+
+
+			window.addEventListener("deviceorientation", moveBall);
+			function moveBall(evt) {
+				//
+				var xrotation;
+				if (evt.gamma > 0)
+					xrotation = (90.0 - evt.gamma) / 90.0 * Math.PI / 2;
+				else 
+					xrotation = -(90.0 + evt.gamma) / 90.0 * Math.PI / 2;
+					
+				var yrotation = -evt.alpha / 360.0 * 2 * Math.PI;
+				lr = yrotation;
+				ud = xrotation;
+				//$("#coords").text("Alpha: " + evt.alpha + ", Beta:" + evt.beta + ", Gamma:" + evt.gamma);
+				//alert(yrotation);
+			} 
+
+
+		
+		
+			window.addEventListener("keypress", function(evt) { 
+				var key = String.fromCharCode(evt.which);
+				switch(key) {
+				     case "w":
+				        ud += 0.05;
+				        break;
+				     case "s":
+				        ud -= 0.05;
+				        break;
+				     case "a":
+				        lr += 0.05;
+				        break;
+				     case "d":
+				        lr -= 0.05;
+				        break;				        
+				 }  
+				
+			});
+			
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			//The texture to be painted on the inside of our spherical world
+			var texture = new THREE.TextureLoader().load("picture.jpg");
+
+
+			//Let there be light			
+			var light = new THREE.AmbientLight( 0xdddddd ); // soft white light
+			scene.add( light );
+			
+					
+ 			var cubgeo = new THREE.BoxGeometry( 1, 1, 1 );
+			var cubgeoMaterial = new THREE.MeshBasicMaterial( {color: 0x00ff00, side: THREE.DoubleSide} );
+			var cube = new THREE.Mesh( cubgeo, cubgeoMaterial );
+			cube.position.z = 10;
+			scene.add( cube );
+ 			
+			
+			var geometry = new THREE.SphereGeometry( 1000, 32, 32 );
+			var material = new THREE.MeshPhongMaterial( {
+				    map: texture,
+				    side: THREE.DoubleSide //only THREE.BackSide is required, but double side let's be see my sphere from the outside just in case. 
+				} );
+
+			var sphere = new THREE.Mesh( geometry, material );
+			scene.add( sphere );
+
+			var axisHelper = new THREE.AxisHelper( 1 );
+      		scene.add( axisHelper );
+
+			//camera.position.z = 10;
+			//camera.lookAt(new THREE.Vector3( -1, 0, 1 ));
+			//camera.rotation.x = Math.PI / 4;
+
+			var render = function () {
+				requestAnimationFrame( render );
+				
+				//camera.rotation.x += 0.1;
+				//camera.rotation.z +- 0.05;
+
+				
+				var direction = new THREE.Vector3(0, 0, 1.0);
+				direction = direction.applyAxisAngle(new THREE.Vector3(0, 1.0, 0), lr);
+				var tmpVec = new THREE.Vector3(direction.z, 0.0, -direction.x);
+				tmpVec = tmpVec.normalize();
+				direction = direction.applyAxisAngle(tmpVec, -ud);
+				camera.lookAt(direction);
+				//camera.rotation.x = ud;
+
+			//	cube.rotation.x += 0.1;
+		//		cube.rotation.y += 0.1;
+
+				renderer.render(scene, camera);
+			};
+
+			render();
+		</script>
+	</body>
+</html>
